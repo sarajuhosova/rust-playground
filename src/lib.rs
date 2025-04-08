@@ -2,3 +2,4 @@
 
 mod fibonacci;
 mod rectangle;
+mod dna;
