@@ -1,4 +1,4 @@
-pub fn fibonacci(num: u32) {
+fn fibonacci(num: u32) {
     fn fib(left: u32, right: u32, more: u32) {
         if more <= 0 { return; }
         let next = left + right;

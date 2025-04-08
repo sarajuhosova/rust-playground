@@ -17,10 +17,19 @@ impl Rectangle {
     }
 }
 
-pub fn main() {
-    let rect = Rectangle::new(13, 21);
-    println!("{}", rect.area());
+#[cfg(test)]
+mod tests {
 
-    let square = Rectangle::square(56);
-    println!("{}", square.area());
+    #[test]
+    fn test_rectangle() {
+        let rect = super::Rectangle::new(13, 21);
+        assert_eq!(rect.area(), 273);
+    }
+
+    #[test]
+    fn test_square() {
+        let square = super::Rectangle::square(56);
+        assert_eq!(square.area(), 3136);
+    }
+
 }
