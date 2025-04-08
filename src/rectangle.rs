@@ -19,17 +19,17 @@ impl Rectangle {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
 
     #[test]
     fn test_rectangle() {
-        let rect = super::Rectangle::new(13, 21);
+        let rect = Rectangle::new(13, 21);
         assert_eq!(rect.area(), 273);
     }
 
     #[test]
     fn test_square() {
-        let square = super::Rectangle::square(56);
+        let square = Rectangle::square(56);
         assert_eq!(square.area(), 3136);
     }
-
 }
