@@ -6,31 +6,27 @@ use crate::dna::state_machine::StateMachine;
 #[derive(Clone, Eq, PartialEq, Debug, Default)]
 pub struct Statistics {
     proteins: Vec<Protein>,
+    remainder: Vec<AminoAcid>,
 }
 
 impl Statistics {
     /// Extract the statistics from the state machine
     pub fn from(state_machine: StateMachine) -> Self {
-        let mut proteins = Vec::new();
-        let mut latest = Protein::default();
-        for i in state_machine.protein {
-            if i.is_initial() {
-                proteins.push(latest);
-                latest = Protein::default();
-            }
-            latest.push(i);
+        Self { 
+            proteins: state_machine.proteins
+                .iter().take(state_machine.count)
+                .cloned().collect(),
+            remainder: state_machine.remainder
         }
-        proteins.push(latest);
-
-        Self { proteins }
     }
 
     /// Returns the number of a particular codon read from the input
     pub fn amino_acid_count(&self, amino_acid: AminoAcid) -> usize {
         self.proteins.iter().flatten().filter(|a| **a == amino_acid).count()
+            + self.remainder.iter().filter(|a| **a == amino_acid).count()
     }
 
-    /// Returns the number of codons read from the input
+    /// Returns the number of proteins read from the input
     pub fn protein_count(&self) -> usize {
         self.proteins.len()
     }

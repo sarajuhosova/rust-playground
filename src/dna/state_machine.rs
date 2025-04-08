@@ -1,7 +1,6 @@
-use crate::dna::codon::{to_amino_acid, PartialCodon};
+use crate::dna::codon::{as_initial, to_amino_acid, Codon, PartialCodon};
 use crate::dna::data::alphabet::Alphabet;
-use crate::dna::data::alphabet::Alphabet::*;
-use crate::dna::data::amino_acid::AminoAcid::{FM, M};
+use crate::dna::data::amino_acid::AminoAcid;
 use crate::dna::protein::Protein;
 use crate::dna::statistics::Statistics;
 
@@ -10,7 +9,9 @@ use crate::dna::statistics::Statistics;
 pub struct StateMachine {
     initialised: bool,
     partial_codon: PartialCodon,
-    pub protein: Protein,
+    pub proteins: Vec<Protein>,
+    pub count: usize,
+    pub remainder: Vec<AminoAcid>
 }
 
 impl StateMachine {
@@ -24,48 +25,47 @@ impl StateMachine {
         Statistics::from(self)
     }
 
-    /// Takes and potentially modifies the state machine as it transitions based on the input.
-    fn transition(&mut self, input: Alphabet) {
-        if self.initialised {
-            match self.partial_codon {
-                PartialCodon::StageZero =>
-                    self.partial_codon = PartialCodon::StageOne(input),
-                PartialCodon::StageOne(f) =>
-                    self.partial_codon = PartialCodon::StageTwo(f, input),
-                PartialCodon::StageTwo(f, s) => {
-                    match to_amino_acid((f, s, input)) {
-                        Some(amino_acid) => self.protein.push(amino_acid),
-                        None => self.initialised = false,
+    fn add_to_protein(&mut self, amino_acid: AminoAcid) {
+        self.proteins[self.count].push(amino_acid);
+    }
+
+    fn add_codon(&mut self, codon: Codon) {
+        if !self.initialised {
+            match as_initial(codon) {
+                Some(amino_acid) => {
+                    self.initialised = true;
+                    self.proteins.push(vec![amino_acid]);
+                }
+                None => {
+                    match to_amino_acid(codon) {
+                        Some(amino_acid) => { self.remainder.push(amino_acid) }
+                        None => {}
                     }
-                    self.partial_codon = PartialCodon::StageZero
                 }
             }
         } else {
-            match self.partial_codon {
-                PartialCodon::StageZero => {
-                    match input {
-                        T | C | G => self.partial_codon = PartialCodon::StageOne(input),
-                        _ => {}
-                    }
+            match to_amino_acid(codon) {
+                Some(amino_acid) => { self.proteins[self.count].push(amino_acid) }
+                None => { 
+                    self.initialised = false;
+                    self.count += 1;
                 }
-                PartialCodon::StageOne(f) => {
-                    self.partial_codon = if input == T {
-                        PartialCodon::StageTwo(f, T)
-                    } else {
-                        PartialCodon::StageZero
-                    }
-                }
-                PartialCodon::StageTwo(f, _) => {
-                    if input == G {
-                        self.initialised = true;
-                        match f {
-                            A | G => self.protein.push(M),
-                            T => self.protein.push(FM),
-                            _ => { panic!("invalid state") }
-                        }
-                    }
-                    self.partial_codon = PartialCodon::StageZero
-                }
+            }
+        }
+    }
+
+    /// Takes and potentially modifies the state machine as it transitions based on the input.
+    fn transition(&mut self, input: Alphabet) {
+        match self.partial_codon {
+            PartialCodon::StageZero => {
+                self.partial_codon = PartialCodon::StageOne(input)
+            }
+            PartialCodon::StageOne(f) => {
+                self.partial_codon = PartialCodon::StageTwo(f, input)
+            }
+            PartialCodon::StageTwo(f, s) => {
+                self.add_codon((f, s, input));
+                self.partial_codon = PartialCodon::StageZero
             }
         }
     }
