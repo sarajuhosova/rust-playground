@@ -47,3 +47,14 @@ pub enum AminoAcid {
     /// Tyrosine
     Y,
 }
+
+impl AminoAcid {
+
+    pub fn is_initial(&self) -> bool {
+        match self {
+            AminoAcid::FM | AminoAcid::M => true,
+            _ => false,
+        }
+    }
+
+}

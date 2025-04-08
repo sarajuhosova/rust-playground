@@ -46,7 +46,7 @@ mod data;
 mod state_machine;
 mod protein;
 mod statistics;
-mod partial_codon;
+mod codon;
 
 use data::alphabet::Alphabet;
 use data::amino_acid::AminoAcid;
