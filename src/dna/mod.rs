@@ -112,4 +112,24 @@ mod tests {
         assert_eq!(&statistics.proteins()[0], &[M, P, R]);
         assert_eq!(&statistics.proteins()[1], &[FM, P, H]);
     }
+
+    /// Testing the reading of proteins
+    #[test]
+    fn test_open_close_x_3() {
+        use AminoAcid::*;
+
+        let example_input: Vec<Alphabet> =
+            Alphabet::from(
+                "TTG_TAA_ATG_TAG_GTG_TGA"
+            ).expect("Input string should only contain letters CTAG");
+
+        let state_machine = StateMachine::default();
+
+        let statistics = state_machine.run(example_input.iter());
+
+        assert_eq!(statistics.protein_count(), 3);
+        assert_eq!(&statistics.proteins()[0], &[FM]);
+        assert_eq!(&statistics.proteins()[1], &[M]);
+        assert_eq!(&statistics.proteins()[2], &[M]);
+    }
 }
